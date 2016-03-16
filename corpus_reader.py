@@ -5,7 +5,6 @@ class CorpusReader:
         # filename is the name of the rel-[whatever]set.[postfix] file
         self.filename = 'data/'+filename
         self.reading_gold_file = reading_gold_file
-        self.read_corpus
         self.corpus = self.read_corpus(reading_gold_file)
 
     def read_corpus(self, reading_gold_file=False):
@@ -27,6 +26,7 @@ class CorpusReader:
                 corpus[doc_filename] = Document(
                                             title=doc_filename,
                                             parses=self.get_document_parses(doc_filename),
+                                            pos_tagged_sents=self.get_pos_tagged_sents(doc_filename),
                                             reading_gold_file=reading_gold_file
                                         )
             # now we are sure document is in corpus. Add the two_tokens line
@@ -45,6 +45,14 @@ class CorpusReader:
             tree_lines.append(nltk.tree.Tree.fromstring(line))
         return tree_lines
 
+    def get_pos_tagged_sents(self, doc_filename):
+        lines = self.get_file_lines('data/postagged-files/'+doc_filename+'.head.rel.tokenized.raw.tag')
+        no_empty_lines = [line for line in lines if line not in [' ', '', '\n']]
+        for line in no_empty_lines:
+            pos_tagged_sents = [tok.split("_") for tok in line.split()]
+        return pos_tagged_sents
+
+
     def get_file_lines(self, filepath):
         #filepath is relative to being in the project directory
         f = open(filepath, 'r')
@@ -53,10 +61,11 @@ class CorpusReader:
         return lines
 
 class Document:
-    def __init__(self, title, parses, reading_gold_file=False):
+    def __init__(self, title, parses, pos_tagged_sents, reading_gold_file=False):
         self.title = title
         self.reading_gold_file = reading_gold_file
         self.parses = parses
+        self.pos_tagged_sents = pos_tagged_sents
         self.two_tokens = []
 
 
@@ -86,4 +95,4 @@ if __name__ == '__main__':
     # Corpus is a dict from {doc_name : document_object}
     c = CorpusReader('rel-trainset.gold', reading_gold_file=True)
     corpus = c.corpus
-    print (corpus[c.corpus.keys()[0]].parses[0])
+    print (corpus[c.corpus.keys()[0]].pos_tagged_sents)
