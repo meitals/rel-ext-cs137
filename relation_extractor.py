@@ -1,3 +1,15 @@
+"""
+Workflow:
+1. Initiate RelExtractor object
+2. featurize training corpus
+3. train model 
+4. featurize test corpus
+5. label test using model
+6. evaluate accuracy
+
+"""
+
+
 import corpus_reader
 
 class RelInstance(object):
@@ -5,6 +17,8 @@ class RelInstance(object):
 		self.tokens = '_'.join([entity1, entity2])
 		self.relType = relType
 		self.features = [] #list of feature names to be written
+	def __str__(self):
+		return (entity1, entity2)
 
 class RelExtractor(object):
 
@@ -22,24 +36,30 @@ class RelExtractor(object):
 		"""writes training file and runs Mallet"""
 		with open('featurized_training', 'w') as training_file:
 			for instance in self.train_instances:
-				pass
+				feature_str = ' '.join(instance.features)
+				training_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, instance.feature_str))
 
-		os.system()
+		os.system('bin/mallet train-classifier --input featurized_training --output-classifier relext_model \
+			--trainer MaxEnt')
 
 	def test(self):
 		"""writes test file and runs Mallet
 
-		infile: featurized_test, outfile: tagged_test"""
+		infile: featurized_test, outfile: labeled_test"""
+
 		with open('featurized_test', 'w') as test_file:
 			for instance in self.test_instances:
-				pass
-
-		os.system()
-
-	def write_gold(self):
-		"""creates a gold_file called gold_test"""
-		with open('gold_test', 'w') as gold_file:
-			pass
+				feature_str = ' '.join(instance.features)
+				test_file.write('{} {}\n'.format(instance.tokens, instance.feature_str))
+		
+		os.system('bin/mallet classify-file --input featurized_test --output labeled_test --classifier relext_model')
 
 	def evaluate(self):
-		os.system('python relation-evaluator.py gold_test tagged_test'.format(gold_fpath, output_fpath))
+		"""creates gold file and compares to labled test"""
+
+		with open('gold_test', 'w') as gold_file:
+			for instance in self.test_instances:
+				feature_str = ' '.join(instance.features)
+				gold_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, instance.feature_str))
+		
+		os.system('python relation-evaluator.py gold_test labeled_test'.format(gold_fpath, output_fpath))
