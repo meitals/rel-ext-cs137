@@ -11,6 +11,8 @@ Workflow:
 
 
 import corpus_reader
+import relation_feature_extractor
+import itertools
 
 class RelInstance(object):
 	def __init__(self, entity1, entity2, relType):
@@ -26,11 +28,11 @@ class RelExtractor(object):
 		self.train_instances = [] #list of RelInstance objects
 		self.test_instances = [] #list of RelInstance objects
 
-	def featurize(self, corpus, rel_inst_list):
+	def featurize(self, corpus_file, rel_inst_list, reading_gold_file):
 		"""creates RelInstance objects and add to their features
-
 		reads from corpus and adds to either train or test instance list"""
-		pass
+		instances = list(itertools.chain.from_iterable(Feature_Extractor(corpus_file, reading_gold_file))
+		return instances
 
 	def train(self):
 		"""writes training file and runs Mallet"""
