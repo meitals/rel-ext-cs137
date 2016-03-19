@@ -48,8 +48,10 @@ class CorpusReader:
     def get_pos_tagged_sents(self, doc_filename):
         lines = self.get_file_lines('data/postagged-files/'+doc_filename+'.head.rel.tokenized.raw.tag')
         no_empty_lines = [line for line in lines if line not in [' ', '', '\n']]
+        pos_tagged_sents = []
         for line in no_empty_lines:
-            pos_tagged_sents = [tok.split("_") for tok in line.split()]
+            sent = [tok.split("_") for tok in line.split()]
+            pos_tagged_sents.append(sent)
         return pos_tagged_sents
 
 
@@ -95,4 +97,8 @@ if __name__ == '__main__':
     # Corpus is a dict from {doc_name : document_object}
     c = CorpusReader('rel-trainset.gold', reading_gold_file=True)
     corpus = c.corpus
-    print (corpus[c.corpus.keys()[0]].pos_tagged_sents)
+
+    print (corpus[c.corpus.keys()[0]].title)
+    for i in corpus[c.corpus.keys()[0]].pos_tagged_sents:
+        print(i)
+    #print (corpus[c.corpus.keys()[0]].pos_tagged_sents)

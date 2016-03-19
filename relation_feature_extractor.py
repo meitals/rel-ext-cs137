@@ -8,21 +8,20 @@
 """
 
 from corpus_reader import *
-from relation_extractor import RelInstance
+from relation_extractor import *
 
-class FeatureExtractor():
+class FeatureExtractor:
 
 	def __init__(self, corpus_file, reading_gold_file):
 		c = CorpusReader(corpus_file, reading_gold_file)
 		self.reading_gold_file = reading_gold_file
 		self.docs = c.corpus.values()
 		self.rel_inst_list = self.create_rel_inst_list()
-		self.featurize()
 
 	def featurize(self):
 		"""Call all featurizing functions here"""
 		self.get_in_between_words()
-		
+
 
 	def get_relations_list_from_gold_files(self):
 		# Create pairs where the key is the word pair and the value is the relation
@@ -61,15 +60,16 @@ class FeatureExtractor():
 				end = int(tt.begin_token2)
 				in_between_words = []
 				in_between_pos = []
-				for i in range(start,end):
-					in_between_words.append(sent[i][0])
-					in_between_pos.append(sent[i][1])
-				self.rel_inst_list[i][j].features.append(in_between_pos)
-				self.rel_inst_list[i][j].features.append(in_between_words)
+				for k in range(start,end-1):
+					in_between_words.append(sent[k][0])
+					in_between_pos.append(sent[k][1])
+				self.rel_inst_list[i][j].features.append(' '.join(in_between_pos))
+				self.rel_inst_list[i][j].features.append(' '.join(in_between_words))
 		return
 
 
 if __name__ == "__main__":
-	rl = get_relations_list_from_gold_files()
+	fe = FeatureExtractor('rel-trainset.gold',True)
+	rl = fe.get_relations_list_from_gold_files()
 	print len(rl)
 	print rl.keys()[0],rl.get(rl.keys()[0])

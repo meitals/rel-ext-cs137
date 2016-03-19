@@ -11,8 +11,8 @@ Workflow:
 
 
 import corpus_reader
-import relation_feature_extractor
-import itertools
+from relation_feature_extractor import *
+import itertools, os
 
 class RelInstance(object):
 	def __init__(self, entity1, entity2, relType):
@@ -29,30 +29,33 @@ class RelExtractor(object):
 		self.test_instances = [] #list of RelInstance objects
 
 	def featurize(self, corpus_file, rel_inst_list, reading_gold_file):
-		"""creates RelInstance objects and add to their features
+		"""Creates RelInstance objects and add to their features
 		reads from corpus and adds to either train or test instance list"""
-		instances = list(itertools.chain.from_iterable(Feature_Extractor(corpus_file, reading_gold_file))
-		return instances
+		fe = FeatureExtractor(corpus_file, reading_gold_file)
+		fe.featurize()
+		rel_inst_list = list(itertools.chain.from_iterable(fe.rel_inst_list))
+		return rel_inst_list
 
-	def train(self):
+	def train(self,training_file):
 		"""writes training file and runs Mallet"""
+		self.train_instances = self.featurize(training_file,self.train_instances,True)
 		with open('featurized_training', 'w') as training_file:
 			for instance in self.train_instances:
 				feature_str = ' '.join(instance.features)
-				training_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, instance.feature_str))
+				training_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, feature_str))
 
 		os.system('bin/mallet train-classifier --input featurized_training --output-classifier relext_model \
 			--trainer MaxEnt')
 
-	def test(self):
+	def test(self,test_file,):
 		"""writes test file and runs Mallet
 
 		infile: featurized_test, outfile: labeled_test"""
-
+		self.test_instances = self.featurize(test_file,self.test_instances,False)
 		with open('featurized_test', 'w') as test_file:
 			for instance in self.test_instances:
 				feature_str = ' '.join(instance.features)
-				test_file.write('{} {}\n'.format(instance.tokens, instance.feature_str))
+				test_file.write('{} {}\n'.format(instance.tokens, feature_str))
 		
 		os.system('bin/mallet classify-file --input featurized_test --output labeled_test --classifier relext_model')
 
@@ -65,3 +68,15 @@ class RelExtractor(object):
 				gold_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, instance.feature_str))
 		
 		os.system('python relation-evaluator.py gold_test labeled_test'.format(gold_fpath, output_fpath))
+
+if __name__ == "__main__":
+	rel_ext = RelExtractor()
+	print(len(rel_ext.train_instances))
+	rel_ext.train('rel-trainset.gold')
+	print len(rel_ext.train_instances)
+	rel_ext.test('rel-devset.raw')
+	#rel_ext.evaluate()
+
+
+
+
