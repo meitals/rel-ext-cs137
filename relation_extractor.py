@@ -43,11 +43,11 @@ class RelExtractor(object):
 			for instance in self.train_instances:
 				feature_str = ' '.join(instance.features)
 				rel_type = instance.relType.split('.')[0]
-				print 'rel_type=', rel_type
+				#print 'rel_type=', rel_type
 				training_file.write('{} {} {}\n'.format(instance.tokens, rel_type, feature_str))
 
-		os.system('Mallet/bin/mallet import-file --input featurized_training --output featurized_training.mallet')
-		os.system('Mallet/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
+		os.system('Mallet1/bin/mallet import-file --input featurized_training --output featurized_training.mallet')
+		os.system('Mallet1/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
 			--trainer MaxEnt')
 
 	def test(self,test_file):
@@ -60,7 +60,7 @@ class RelExtractor(object):
 				feature_str = ' '.join(instance.features)
 				test_file.write('{} {}\n'.format(instance.tokens, feature_str))
 		
-		os.system('Mallet/bin/mallet classify-file --input featurized_test --output labeled_test --classifier relext_model')
+		os.system('Mallet1/bin/mallet classify-file --input featurized_test --output labeled_test --classifier relext_model')
 
 	def evaluate(self):
 		"""creates gold file and compares to labled test"""
