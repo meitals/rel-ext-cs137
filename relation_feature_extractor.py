@@ -28,6 +28,7 @@ class FeatureExtractor:
 		self.featurize_get_nearest_common_ancestor()
 		self.featurize_get_tokens_v1()
 		self.featurize_get_tokens_v2()
+		self.featurize_get_entity_types()
 
 
 	def get_relations_list_from_gold_files(self):

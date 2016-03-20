@@ -6,7 +6,6 @@ Workflow:
 4. featurize test corpus
 5. label test using model
 6. evaluate accuracy
-
 """
 
 
@@ -43,15 +42,15 @@ class RelExtractor(object):
 			for instance in self.train_instances:
 				feature_str = ' '.join(instance.features)
 				rel_type = instance.relType.split('.')[0]
+				#print 'rel_type=', rel_type
 				training_file.write('{} {} {}\n'.format(instance.tokens, rel_type, feature_str))
 
-		os.system('Mallet1/bin/mallet import-file --input featurized_training --line-regex ^(\S*)[\s]*(\S*)[\s]*(.*)$ --output featurized_training.mallet')
+		os.system('Mallet1/bin/mallet import-file --input featurized_training --output featurized_training.mallet')
 		os.system('Mallet1/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
 			--trainer MaxEnt')
 
 	def test(self,test_file):
 		"""writes test file and runs Mallet
-
 		infile: featurized_test, outfile: labeled_test"""
 		self.test_instances = self.featurize(test_file,self.test_instances,True)
 		with open('featurized_test', 'w') as test_file:
@@ -72,35 +71,30 @@ class RelExtractor(object):
 		with open('labeled_test') as labeled_file:
 			with open('output_test', 'w') as output_file:
 				for line in labeled_file.readlines():
-					argmax = self.get_arg_max(line)
-					output_file.write('{}\n'.format(argmax))
+					label = self.get_highest_probability(line)
+					output_file.write('{}\n'.format(label))
+					#output_file.write('{}\n'.format(line.split()[1]))
 		
 		os.system('python relation-evaluator.py gold_test output_test')
 
-	def get_arg_max(self, labeled_line):
-		lineList = labeled_line.split()
-		labels = lineList[1::2]
-		probs = [float(num) for num in lineList[2::2]]
-		prob_rel_dict = {probs[i]:labels[i] for i in range(len(labels))}
-
-		print prob_rel_dict
-
-		sorted_probs = sorted(prob_rel_dict.keys())
-		if sorted_probs[0] > 0.98:
-			return prob_rel_dict[sorted_probs[0]]
-		else:
-			return prob_rel_dict[sorted_probs[1]]
-		
-			
+	def get_highest_probability(self,line):
+		line = line.split()
+		name = line[0]
+		max_prob = 0
+		max_label = ""
+		for i in range(2,len(line),2):
+			if float(line[i]) > max_prob:
+				max_prob = float(line[i])
+				max_label = line[i-1]
+		print name,max_label,max_prob
+		return max_label
 
 if __name__ == "__main__":
 	rel_ext = RelExtractor()
-	print(len(rel_ext.train_instances))
 	rel_ext.train('rel-trainset.gold')
 	print len(rel_ext.train_instances)
 	rel_ext.test('rel-devset.gold')
+	print len(rel_ext.test_instances)
 	rel_ext.evaluate()
-
-
 
 
