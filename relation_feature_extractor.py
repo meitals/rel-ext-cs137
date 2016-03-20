@@ -63,8 +63,8 @@ class FeatureExtractor:
 				for k in range(start,end-1):
 					in_between_words.append(sent[k][0])
 					in_between_pos.append(sent[k][1])
-				self.rel_inst_list[i][j].features.append(' '.join(in_between_pos))
-				self.rel_inst_list[i][j].features.append(' '.join(in_between_words))
+				self.rel_inst_list[i][j].features.append('_'.join(in_between_pos))
+				self.rel_inst_list[i][j].features.append('_'.join(in_between_words))
 		return
 
 
