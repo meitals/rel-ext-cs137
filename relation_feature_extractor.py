@@ -12,6 +12,7 @@
 
 from corpus_reader import *
 from relation_extractor import *
+import re
 
 class FeatureExtractor:
 
@@ -24,7 +25,7 @@ class FeatureExtractor:
 	def featurize(self):
 		"""Call all featurizing functions here"""
 		self.featurize_get_in_between_words()
-		self.featurize_get_subtrees_between_words()
+		self.featurize_get_nearest_common_ancestor()
 
 
 	def get_relations_list_from_gold_files(self):
@@ -76,20 +77,28 @@ class FeatureExtractor:
 		end = int(two_tokens.begin_token2)
 		in_between_words = []
 		in_between_pos = []
-		for k in range(start,end-1):
+		for k in range(start,end):
 			in_between_words.append(sent[k][0])
 			in_between_pos.append(sent[k][1])
 		return in_between_words, in_between_pos
 
 
-	def featurize_get_subtrees_between_words(self):
+	def featurize_get_nearest_common_ancestor(self):
 		for doc_i, doc in enumerate(self.docs):
 			for tt_i, tt in enumerate(doc.two_tokens):
+				# split clears up instances like Arizona_Rattlers, which 
+				# are tow words in the parsed sentences
+				token1 = tt.token1.split("_")
+				token2 = tt.token2.split("_")
 				in_between_words = self.get_in_between_words_and_pos(doc, tt)[0]
-				subtree_string = [tt.token1] + in_between_words + [tt.token2]
+				subtree_string = token1 + in_between_words + token2
 				tt_sent_tree = doc.parses[int(tt.sent_offset1)]
 				tt_subtree = self.get_subtree_between_words(tt_sent_tree, subtree_string)
-				self.rel_inst_list[doc_i][tt_i].features.append(str(tt_subtree))
+				if isinstance(tt_subtree, nltk.tree.Tree):
+					label = tt_subtree.label()
+				else:
+					label = 'no_comm_subtree'
+				self.rel_inst_list[doc_i][tt_i].features.append('comm._ancestor__'+label)
 
 
 	def get_subtree_between_words(self, tree, token_sequence, smallest=[]):
@@ -124,4 +133,5 @@ if __name__ == "__main__":
 	fe.featurize()
 	for x in fe.rel_inst_list[1]:
 		print(x.features)
+		print('\n\n')
 
