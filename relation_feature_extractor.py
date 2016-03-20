@@ -24,7 +24,7 @@ class FeatureExtractor:
 
 	def featurize(self):
 		"""Call all featurizing functions here"""
-		self.featurize_get_in_between_words()
+		#self.featurize_get_in_between_words()
 		self.featurize_get_nearest_common_ancestor()
 		self.featurize_get_tokens_v1()
 		self.featurize_get_tokens_v2()

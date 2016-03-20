@@ -79,10 +79,10 @@ class RelExtractor(object):
 
 if __name__ == "__main__":
 	rel_ext = RelExtractor()
-	print(len(rel_ext.train_instances))
 	rel_ext.train('rel-trainset.gold')
 	print len(rel_ext.train_instances)
 	rel_ext.test('rel-devset.gold')
+	print len(rel_ext.test_instances)
 	rel_ext.evaluate()
 
 
