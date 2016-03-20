@@ -29,6 +29,7 @@ class FeatureExtractor:
 		self.featurize_get_tokens_v1()
 		self.featurize_get_tokens_v2()
 		self.featurize_get_entity_types()
+		self.featurize_add_minimal_tree_nodes()
 
 
 	def get_relations_list_from_gold_files(self):
@@ -133,6 +134,27 @@ class FeatureExtractor:
 				self.rel_inst_list[doc_i][tt_i].features.append('comm._ancestor__'+label)
 
 
+	def featurize_add_minimal_tree_nodes(self):
+		""" adds nodes (not leaves) that are between the target words"""
+		for doc_i, doc in enumerate(self.docs):
+			for tt_i, tt in enumerate(doc.two_tokens):
+				# split clears up instances like Arizona_Rattlers, which 
+				# are tow words in the parsed sentences
+				token1 = tt.token1.split("_")
+				token2 = tt.token2.split("_")
+				in_between_words = self.get_in_between_words_and_pos(doc, tt)[0]
+				subtree_string = token1 + in_between_words + token2
+				tt_sent_tree = doc.parses[int(tt.sent_offset1)]
+				tt_subtree = self.get_subtree_between_words(tt_sent_tree, subtree_string)
+
+				if isinstance(tt_subtree, nltk.tree.Tree):
+					tt_subtree_labels = self.get_tree_labels(tt_subtree)
+					tt_subtree_labels = '_'.join(tt_subtree_labels)
+				else:
+					tt_subtree_labels = 'no_comm_subtree'
+				self.rel_inst_list[doc_i][tt_i].features.append('subtree_node_labels__'+tt_subtree_labels)
+
+
 	def get_subtree_between_words(self, tree, token_sequence, smallest=[]):
 		"""
             Smallest subtree from tree that contains token_sequence
@@ -155,6 +177,14 @@ class FeatureExtractor:
 		tree_words = " ".join(tree.leaves())
 		target = " ".join([token for token in token_sequence])
 		return target in tree_words
+
+
+	def get_tree_labels(self, tree):
+		labels = [tree.label()]
+		for child in tree:
+			if isinstance(child, nltk.tree.Tree):
+				labels.extend(self.get_tree_labels(child))
+		return labels
 
 
 if __name__ == "__main__":
