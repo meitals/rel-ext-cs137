@@ -65,9 +65,10 @@ class RelExtractor(object):
 		with open('gold_test', 'w') as gold_file:
 			for instance in self.test_instances:
 				feature_str = ' '.join(instance.features)
-				gold_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, instance.feature_str))
+				gold_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, feature_str))
 		
-		os.system('python relation-evaluator.py gold_test labeled_test'.format(gold_fpath, output_fpath))
+		#os.system('python relation-evaluator.py gold_test labeled_test'.format(gold_fpath, output_fpath))
+		os.system('python relation-evaluator.py gold_test labeled_test')
 
 if __name__ == "__main__":
 	rel_ext = RelExtractor()
@@ -75,7 +76,7 @@ if __name__ == "__main__":
 	rel_ext.train('rel-trainset.gold')
 	print len(rel_ext.train_instances)
 	rel_ext.test('rel-devset.raw')
-	#rel_ext.evaluate()
+	rel_ext.evaluate()
 
 
 
