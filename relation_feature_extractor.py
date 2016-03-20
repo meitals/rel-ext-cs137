@@ -20,7 +20,8 @@ class FeatureExtractor:
 
 	def featurize(self):
 		"""Call all featurizing functions here"""
-		self.get_in_between_words()
+		self.featurize_get_in_between_words()
+		self.featurize_get_subtrees_between_words()
 
 
 	def get_relations_list_from_gold_files(self):
@@ -47,25 +48,62 @@ class FeatureExtractor:
 		return rel_inst_list
 
 
-	def get_in_between_words(self):
+	def featurize_get_in_between_words(self):
 		"""Gets words in between related words"""
-		for i in range(len(self.docs)):
-			doc = self.docs[i]
+		for doc_i, doc in enumerate(self.docs):
 			pos_tagged_sents = doc.pos_tagged_sents
-			for j in range(len(doc.two_tokens)):
-				tt = doc.two_tokens[j]
-				sent = pos_tagged_sents[int(tt.sent_offset1)]
-				# We assume entity1 comes before entity2
-				start = int(tt.end_token1)
-				end = int(tt.begin_token2)
-				in_between_words = []
-				in_between_pos = []
-				for k in range(start,end-1):
-					in_between_words.append(sent[k][0])
-					in_between_pos.append(sent[k][1])
-				self.rel_inst_list[i][j].features.append('_'.join(in_between_pos))
-				self.rel_inst_list[i][j].features.append('_'.join(in_between_words))
+			for tt_i, tt in enumerate(doc.two_tokens):
+				words, pos = self.get_in_between_words_and_pos(doc, tt)
+				self.rel_inst_list[doc_i][tt_i].features.append('_'.join(pos))
+				self.rel_inst_list[doc_i][tt_i].features.append('_'.join(words))
 		return
+
+
+	def get_in_between_words_and_pos(self, document, two_tokens):
+		sent = document.pos_tagged_sents[int(two_tokens.sent_offset1)]
+		# We assume entity1 comes before entity2
+		start = int(two_tokens.end_token1)
+		end = int(two_tokens.begin_token2)
+		in_between_words = []
+		in_between_pos = []
+		for k in range(start,end-1):
+			in_between_words.append(sent[k][0])
+			in_between_pos.append(sent[k][1])
+		return in_between_words, in_between_pos
+
+
+	def featurize_get_subtrees_between_words(self):
+		for doc_i, doc in enumerate(self.docs):
+			for tt_i, tt in enumerate(doc.two_tokens):
+				in_between_words = self.get_in_between_words_and_pos(doc, tt)[0]
+				subtree_string = [tt.token1] + in_between_words + [tt.token2]
+				tt_sent_tree = doc.parses[int(tt.sent_offset1)]
+				tt_subtree = self.get_subtree_between_words(tt_sent_tree, subtree_string)
+				self.rel_inst_list[doc_i][tt_i].features.append(str(tt_subtree))
+
+
+	def get_subtree_between_words(self, tree, token_sequence, smallest=[]):
+		"""
+            Smallest subtree from tree that contains token_sequence
+            Used to find the parse of a particular entity
+        """
+		if self.words_in_tree(tree, token_sequence):
+			smallest = tree
+			for child in tree:
+				if isinstance(child, nltk.tree.Tree):
+					smallest = self.get_subtree_between_words(child, token_sequence, smallest)
+		else: 
+			return smallest
+		return smallest
+
+
+	def words_in_tree(self, tree, token_sequence):
+		"""
+			checks to see if the token sequence appears in the tree
+		"""
+		tree_words = " ".join(tree.leaves())
+		target = " ".join([token for token in token_sequence])
+		return target in tree_words
 
 
 if __name__ == "__main__":
@@ -73,3 +111,7 @@ if __name__ == "__main__":
 	rl = fe.get_relations_list_from_gold_files()
 	print len(rl)
 	print rl.keys()[0],rl.get(rl.keys()[0])
+	fe.featurize()
+	for x in fe.rel_inst_list[1]:
+		print(x.features)
+
