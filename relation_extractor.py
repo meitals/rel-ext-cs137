@@ -73,9 +73,24 @@ class RelExtractor(object):
 		with open('labeled_test') as labeled_file:
 			with open('output_test', 'w') as output_file:
 				for line in labeled_file.readlines():
-					output_file.write('{}\n'.format(line.split()[1]))
+					label = self.get_highest_probability(line)
+					output_file.write('{}\n'.format(label))
+					#output_file.write('{}\n'.format(line.split()[1]))
 		
 		os.system('python relation-evaluator.py gold_test output_test')
+
+	def get_highest_probability(self,line):
+		line = line.split()
+		name = line[0]
+		max_prob = 0
+		max_label = ""
+		for i in range(2,len(line),2):
+			if float(line[i]) > max_prob:
+				max_prob = float(line[i])
+				max_label = line[i-1]
+		print name,max_label,max_prob
+		return max_label
+
 
 if __name__ == "__main__":
 	rel_ext = RelExtractor()
