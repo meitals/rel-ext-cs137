@@ -2,6 +2,9 @@
 	Possible features:
 	1. Get relation lists from training data, if entity pairs match, 
 		add a relation.
+	2. Get words and POS in between entities
+	3. Get parse tree in between entities
+	4. Get entity types
 
 
 
@@ -46,6 +49,12 @@ class FeatureExtractor:
 					doc_list.append(RelInstance(tt.token1,tt.token2,""))
 			rel_inst_list.append(doc_list)
 		return rel_inst_list
+
+	def featurize_get_entity_types(self):
+		for doc_i, doc in enumerate(self.docs):
+			for tt_i, tt in enumerate(doc.two_tokens):
+				types = tt.entity_type1+'_'+tt.entity_type2
+				self.rel_inst_list[doc_i][tt_i].features.append(types)	
 
 
 	def featurize_get_in_between_words(self):

@@ -52,7 +52,7 @@ class RelExtractor(object):
 		"""writes test file and runs Mallet
 
 		infile: featurized_test, outfile: labeled_test"""
-		self.test_instances = self.featurize(test_file,self.test_instances,False)
+		self.test_instances = self.featurize(test_file,self.test_instances,True)
 		with open('featurized_test', 'w') as test_file:
 			for instance in self.test_instances:
 				feature_str = ' '.join(instance.features)
@@ -68,7 +68,6 @@ class RelExtractor(object):
 				feature_str = ' '.join(instance.features)
 				gold_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, feature_str))
 		
-		#os.system('python relation-evaluator.py gold_test labeled_test'.format(gold_fpath, output_fpath))
 		os.system('python relation-evaluator.py gold_test labeled_test')
 
 if __name__ == "__main__":
@@ -76,7 +75,7 @@ if __name__ == "__main__":
 	print(len(rel_ext.train_instances))
 	rel_ext.train('rel-trainset.gold')
 	print len(rel_ext.train_instances)
-	rel_ext.test('rel-devset.raw')
+	rel_ext.test('rel-devset.gold')
 	rel_ext.evaluate()
 
 
