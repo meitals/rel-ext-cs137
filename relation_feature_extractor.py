@@ -37,7 +37,6 @@ class FeatureExtractor:
 					relation_pairs[tt.token1+"_"+tt.token2] = tt.tag
 		return relation_pairs
 
-
 	def create_rel_inst_list(self):
 		rel_inst_list = []
 		for doc in self.docs:
@@ -63,8 +62,10 @@ class FeatureExtractor:
 			pos_tagged_sents = doc.pos_tagged_sents
 			for tt_i, tt in enumerate(doc.two_tokens):
 				words, pos = self.get_in_between_words_and_pos(doc, tt)
-				self.rel_inst_list[doc_i][tt_i].features.append('_'.join(pos))
-				self.rel_inst_list[doc_i][tt_i].features.append('_'.join(words))
+				words = ["inbetweenwords__"+word for word in words]
+				pos = ["inbetweenpos__"+p for p in pos]
+				self.rel_inst_list[doc_i][tt_i].features.extend(pos)
+				self.rel_inst_list[doc_i][tt_i].features.extend(words)
 		return
 
 
