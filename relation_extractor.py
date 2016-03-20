@@ -60,7 +60,7 @@ class RelExtractor(object):
 				feature_str = ' '.join(instance.features)
 				test_file.write('{} {}\n'.format(instance.tokens, feature_str))
 		
-		os.system('Mallet/bin/mallet classify-file --input featurized_test --output labeled_test --classifier relext_model')
+		os.system('Mallet1/bin/mallet classify-file --input featurized_test --output labeled_test --classifier relext_model')
 
 	def evaluate(self):
 		"""creates gold file and compares to labled test"""

@@ -26,6 +26,8 @@ class FeatureExtractor:
 		"""Call all featurizing functions here"""
 		self.featurize_get_in_between_words()
 		self.featurize_get_nearest_common_ancestor()
+		self.featurize_get_tokens_v1()
+		self.featurize_get_tokens_v2()
 
 
 	def get_relations_list_from_gold_files(self):
@@ -68,6 +70,23 @@ class FeatureExtractor:
 				self.rel_inst_list[doc_i][tt_i].features.extend(pos)
 				self.rel_inst_list[doc_i][tt_i].features.extend(words)
 		return
+
+
+	def featurize_get_tokens_v1(self):
+		for doc_i, doc in enumerate(self.docs):
+			for tt_i, tt in enumerate(doc.two_tokens):
+				# split clears up instances like Arizona_Rattlers, which 
+				# are tow words in the parsed sentences
+				self.rel_inst_list[doc_i][tt_i].features.append('token__'+tt.token1)
+				self.rel_inst_list[doc_i][tt_i].features.append('token__'+tt.token2)
+
+
+	def featurize_get_tokens_v2(self):
+		for doc_i, doc in enumerate(self.docs):
+			for tt_i, tt in enumerate(doc.two_tokens):
+				# split clears up instances like Arizona_Rattlers, which 
+				# are tow words in the parsed sentences
+				self.rel_inst_list[doc_i][tt_i].features.append('both_token__'+tt.token1+'_'+tt.token2)
 
 
 	def get_in_between_words_and_pos(self, document, two_tokens):
