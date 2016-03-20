@@ -42,17 +42,18 @@ class RelExtractor(object):
 		with open('featurized_training', 'w') as training_file:
 			for instance in self.train_instances:
 				feature_str = ' '.join(instance.features)
+				rel_type = instance.relType.split('.')[0]
 				training_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, feature_str))
 
 		os.system('Mallet/bin/mallet import-file --input featurized_training --output featurized_training.mallet')
 		os.system('Mallet/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
 			--trainer MaxEnt')
 
-	def test(self,test_file,):
+	def test(self,test_file):
 		"""writes test file and runs Mallet
 
 		infile: featurized_test, outfile: labeled_test"""
-		self.test_instances = self.featurize(test_file,self.test_instances,False)
+		self.test_instances = self.featurize(test_file,self.test_instances,True)
 		with open('featurized_test', 'w') as test_file:
 			for instance in self.test_instances:
 				feature_str = ' '.join(instance.features)
@@ -65,18 +66,23 @@ class RelExtractor(object):
 
 		with open('gold_test', 'w') as gold_file:
 			for instance in self.test_instances:
-				feature_str = ' '.join(instance.features)
-				gold_file.write('{} {} {}\n'.format(instance.tokens, instance.relType, instance.feature_str))
+				rel_type = instance.relType.split('.')[0]
+				gold_file.write('{}\n'.format(rel_type))
+
+		with open('labeled_test') as labeled_file:
+			with open('output_test', 'w') as output_file:
+				for line in labeled_file.readlines():
+					output_file.write('{}\n'.format(line.split()[1]))
 		
-		os.system('python relation-evaluator.py gold_test labeled_test'.format(gold_fpath, output_fpath))
+		os.system('python relation-evaluator.py gold_test output_test')
 
 if __name__ == "__main__":
 	rel_ext = RelExtractor()
 	print(len(rel_ext.train_instances))
 	rel_ext.train('rel-trainset.gold')
 	print len(rel_ext.train_instances)
-	rel_ext.test('rel-devset.raw')
-	#rel_ext.evaluate()
+	rel_ext.test('rel-devset.gold')
+	rel_ext.evaluate()
 
 
 
