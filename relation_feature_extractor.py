@@ -30,6 +30,7 @@ class FeatureExtractor:
 		self.featurize_get_tokens_v2()
 		self.featurize_get_entity_types()
 		self.featurize_add_minimal_tree_nodes()
+		self.featurize_get_bigrams()
 
 
 	def get_relations_list_from_gold_files(self):
@@ -103,6 +104,16 @@ class FeatureExtractor:
 				self.rel_inst_list[doc_i][tt_i].features.append('both_token__'+tt.token1+'_'+tt.token2)
 
 
+	def featurize_get_bigrams(self):
+		for doc_i, doc in enumerate(self.docs):
+			for tt_i, tt in enumerate(doc.two_tokens):
+				# split clears up instances like Arizona_Rattlers, which 
+				# are tow words in the parsed sentences
+				bigrams = self.get_bigrams(doc, tt)
+				for bg in bigrams:
+					self.rel_inst_list[doc_i][tt_i].features.append('bigram__'+bg)
+
+
 	def get_in_between_words_and_pos(self, document, two_tokens):
 		sent = document.pos_tagged_sents[int(two_tokens.sent_offset1)]
 		# We assume entity1 comes before entity2
@@ -115,6 +126,15 @@ class FeatureExtractor:
 			in_between_pos.append(sent[k][1])
 		return in_between_words, in_between_pos
 
+
+	def get_bigrams(self, document, two_tokens):
+		bigrams = []
+		in_between_words = self.get_in_between_words_and_pos(document, two_tokens)[0]
+		all_words = [two_tokens.token1] + in_between_words + [two_tokens.token2]
+		for index, word in enumerate(all_words):
+			if index != len(all_words)-1:
+				bigrams.append(word+'_'+all_words[index+1])
+		return bigrams
 
 	def featurize_get_nearest_common_ancestor(self):
 		for doc_i, doc in enumerate(self.docs):
