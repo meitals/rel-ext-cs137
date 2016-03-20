@@ -43,11 +43,10 @@ class RelExtractor(object):
 			for instance in self.train_instances:
 				feature_str = ' '.join(instance.features)
 				rel_type = instance.relType.split('.')[0]
-				print 'rel_type=', rel_type
 				training_file.write('{} {} {}\n'.format(instance.tokens, rel_type, feature_str))
 
-		os.system('Mallet/bin/mallet import-file --input featurized_training --output featurized_training.mallet')
-		os.system('Mallet/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
+		os.system('Mallet1/bin/mallet import-file --input featurized_training --line-regex ^(\S*)[\s]*(\S*)[\s]*(.*)$ --output featurized_training.mallet')
+		os.system('Mallet1/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
 			--trainer MaxEnt')
 
 	def test(self,test_file):
@@ -73,9 +72,26 @@ class RelExtractor(object):
 		with open('labeled_test') as labeled_file:
 			with open('output_test', 'w') as output_file:
 				for line in labeled_file.readlines():
-					output_file.write('{}\n'.format(line.split()[1]))
+					argmax = self.get_arg_max(line)
+					output_file.write('{}\n'.format(argmax))
 		
 		os.system('python relation-evaluator.py gold_test output_test')
+
+	def get_arg_max(self, labeled_line):
+		lineList = labeled_line.split()
+		labels = lineList[1::2]
+		probs = [float(num) for num in lineList[2::2]]
+		prob_rel_dict = {probs[i]:labels[i] for i in range(len(labels))}
+
+		print prob_rel_dict
+
+		sorted_probs = sorted(prob_rel_dict.keys())
+		if sorted_probs[0] > 0.98:
+			return prob_rel_dict[sorted_probs[0]]
+		else:
+			return prob_rel_dict[sorted_probs[1]]
+		
+			
 
 if __name__ == "__main__":
 	rel_ext = RelExtractor()
