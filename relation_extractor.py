@@ -86,7 +86,7 @@ class RelExtractor(object):
 			if float(line[i]) > max_prob:
 				max_prob = float(line[i])
 				max_label = line[i-1]
-		print name,max_label,max_prob
+		#print name,max_label,max_prob
 		return max_label
 
 if __name__ == "__main__":

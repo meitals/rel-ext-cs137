@@ -72,6 +72,18 @@ class FeatureExtractor:
 				self.rel_inst_list[doc_i][tt_i].features.extend(words)
 		return
 
+	def featurize_get_in_between_words(self):
+		"""Gets words in between related words"""
+		for doc_i, doc in enumerate(self.docs):
+			pos_tagged_sents = doc.pos_tagged_sents
+			for tt_i, tt in enumerate(doc.two_tokens):
+				words, pos = self.get_in_between_words_and_pos(doc, tt)
+				words = ["inbetweenwords__"+word for word in words]
+				pos = ["inbetweenpos__"+p for p in pos]
+				self.rel_inst_list[doc_i][tt_i].features.extend(pos)
+				self.rel_inst_list[doc_i][tt_i].features.extend(words)
+		return
+
 
 	def featurize_get_tokens_v1(self):
 		for doc_i, doc in enumerate(self.docs):
