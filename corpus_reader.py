@@ -76,7 +76,7 @@ class TwoTokens:
         self.split_line = split_line
         #gold files have the tag at the beginning--grab and remove it
         if reading_gold_file:
-            self.tag = split_line[0]
+            self.tag = split_line[0].split('.')[0]
             split_line = self.split_line[1:]
         self.doc_num = split_line[0]
         self.sent_offset1 = split_line[1]
