@@ -31,8 +31,9 @@ class FeatureExtractor:
 		self.featurize_get_entity_types()
 		self.featurize_add_minimal_tree_nodes()
 		self.featurize_get_bigrams()
-		self.featurize_in_dependency_relation()
+		#self.featurize_in_dependency_relation()
 		self.featurize_target_pos()
+		self.featurize_border_words()
 
 	def get_relations_list_from_gold_files(self):
 		# Create pairs where the key is the word pair and the value is the relation
@@ -125,10 +126,10 @@ class FeatureExtractor:
 
 
 	def get_in_between_words_and_pos(self, document, two_tokens):
-		sent = document.pos_tagged_sents[int(two_tokens.sent_offset1)]
+		sent = document.pos_tagged_sents[two_tokens.sent_offset1]
 		# We assume entity1 comes before entity2
-		start = int(two_tokens.end_token1)
-		end = int(two_tokens.begin_token2)
+		start = two_tokens.end_token1
+		end = two_tokens.begin_token2
 		in_between_words = []
 		in_between_pos = []
 		for k in range(start,end):
@@ -155,7 +156,7 @@ class FeatureExtractor:
 				token2 = tt.token2.split("_")
 				in_between_words = self.get_in_between_words_and_pos(doc, tt)[0]
 				subtree_string = token1 + in_between_words + token2
-				tt_sent_tree = doc.parses[int(tt.sent_offset1)]
+				tt_sent_tree = doc.parses[tt.sent_offset1]
 				tt_subtree = self.get_subtree_between_words(tt_sent_tree, subtree_string)
 				if isinstance(tt_subtree, nltk.tree.Tree):
 					label = tt_subtree.label()
@@ -174,7 +175,7 @@ class FeatureExtractor:
 				token2 = tt.token2.split("_")
 				in_between_words = self.get_in_between_words_and_pos(doc, tt)[0]
 				subtree_string = token1 + in_between_words + token2
-				tt_sent_tree = doc.parses[int(tt.sent_offset1)]
+				tt_sent_tree = doc.parses[tt.sent_offset1]
 				tt_subtree = self.get_subtree_between_words(tt_sent_tree, subtree_string)
 
 				if isinstance(tt_subtree, nltk.tree.Tree):
@@ -228,11 +229,43 @@ class FeatureExtractor:
 				self.rel_inst_list[doc_i][tt_i].features.append('targetpos_{}'.format(pos2))
 
 	def get_target_pos(self, document, two_tokens):
-		sent = document.pos_tagged_sents[int(two_tokens.sent_offset1)]
-		token1_pos = sent[int(two_tokens.begin_token1)][1] 
-		token2_pos = sent[int(two_tokens.begin_token2)][1]
+		sent = document.pos_tagged_sents[two_tokens.sent_offset1]
+		token1_pos = sent[two_tokens.begin_token1][1] 
+		token2_pos = sent[two_tokens.begin_token2][1]
 		return token1_pos, token2_pos
 
+	def featurize_border_words(self):
+		"""word before token1, word after token2
+
+		using bigrams hurt performance"""
+		for doc_i, doc in enumerate(self.docs):
+			for tt_i, tt in enumerate(doc.two_tokens):
+				before_word, after_word, before_bigram, after_bigram = self.get_border_words(doc, tt)
+				self.rel_inst_list[doc_i][tt_i].features.append('BEFOREWORD__{}'.format(before_word))
+				self.rel_inst_list[doc_i][tt_i].features.append('AFTERWORD__{}'.format(after_word))
+				#self.rel_inst_list[doc_i][tt_i].features.append('BEFOREBIGRAM__{}'.format(before_bigram))
+				#self.rel_inst_list[doc_i][tt_i].features.append('AFTERBIGRAM__{}'.format(after_bigram))
+
+
+	def get_border_words(self, document, two_tokens):
+		sent = document.pos_tagged_sents[two_tokens.sent_offset1]
+		before_ind = two_tokens.begin_token1-1
+		after_ind = two_tokens.end_token2
+		if before_ind == -1:
+			before_word = '<start>'
+		else:
+			before_word = sent[before_ind][0]
+		if after_ind == len(sent):
+			after_word = '<end>'
+		else:
+			after_word = sent[after_ind][0]
+		
+		word1 = sent[two_tokens.begin_token1][0]
+		word2 = sent[two_tokens.begin_token2][0]
+		before_bigram = '_'.join([before_word, word1])
+		after_bigram = '_'.join([word2, after_word])
+
+		return before_word, after_word, before_bigram, after_bigram
 
 if __name__ == "__main__":
 	fe = FeatureExtractor('rel-trainset.gold',True)
