@@ -32,7 +32,7 @@ class FeatureExtractor:
 		self.featurize_add_minimal_tree_nodes()
 		self.featurize_get_bigrams()
 		self.featurize_in_dependency_relation()
-
+		self.featurize_target_pos()
 
 	def get_relations_list_from_gold_files(self):
 		# Create pairs where the key is the word pair and the value is the relation
@@ -70,8 +70,19 @@ class FeatureExtractor:
 		for doc_i, doc in enumerate(self.docs):
 			for tt_i, tt in enumerate(doc.two_tokens):
 				types = tt.entity_type1+'_'+tt.entity_type2
-				self.rel_inst_list[doc_i][tt_i].features.append(types)	
-
+				self.rel_inst_list[doc_i][tt_i].features.append(types)
+	
+	def featurize_get_in_between_words(self):
+		"""Gets words in between related words"""
+		for doc_i, doc in enumerate(self.docs):
+			pos_tagged_sents = doc.pos_tagged_sents
+			for tt_i, tt in enumerate(doc.two_tokens):
+				words, pos = self.get_in_between_words_and_pos(doc, tt)
+				words = ["inbetweenwords__"+word for word in words]
+				pos = ["inbetweenpos__"+p for p in pos]
+				self.rel_inst_list[doc_i][tt_i].features.extend(pos)
+				self.rel_inst_list[doc_i][tt_i].features.extend(words)
+		return
 
 	def featurize_get_in_between_words(self):
 		"""Gets words in between related words"""
@@ -204,6 +215,23 @@ class FeatureExtractor:
 			if isinstance(child, nltk.tree.Tree):
 				labels.extend(self.get_tree_labels(child))
 		return labels
+
+	def featurize_target_pos(self):
+		"""add POS tag for second token 
+
+		note: for some reason this works better than including both pos tags"""
+		for doc_i, doc in enumerate(self.docs):
+			pos_tagged_sents = doc.pos_tagged_sents
+			for tt_i, tt in enumerate(doc.two_tokens):
+				pos1, pos2 = self.get_target_pos(doc, tt)
+				#self.rel_inst_list[doc_i][tt_i].features.append('targetpos_{}'.format(pos1))
+				self.rel_inst_list[doc_i][tt_i].features.append('targetpos_{}'.format(pos2))
+
+	def get_target_pos(self, document, two_tokens):
+		sent = document.pos_tagged_sents[int(two_tokens.sent_offset1)]
+		token1_pos = sent[int(two_tokens.begin_token1)][1] 
+		token2_pos = sent[int(two_tokens.begin_token2)][1]
+		return token1_pos, token2_pos
 
 
 if __name__ == "__main__":

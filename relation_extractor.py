@@ -6,7 +6,6 @@ Workflow:
 4. featurize test corpus
 5. label test using model
 6. evaluate accuracy
-
 """
 
 
@@ -46,13 +45,12 @@ class RelExtractor(object):
 				#print 'rel_type=', rel_type
 				training_file.write('{} {} {}\n'.format(instance.tokens, rel_type, feature_str))
 
-		os.system('Mallet1/bin/mallet import-file --input featurized_training --output featurized_training.mallet')
+		os.system('Mallet1/bin/mallet import-file --input featurized_training --line-regex ^(\S*)[\s]*(\S*)[\s]*(.*)$ --output featurized_training.mallet')
 		os.system('Mallet1/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
 			--trainer MaxEnt')
 
 	def test(self,test_file):
 		"""writes test file and runs Mallet
-
 		infile: featurized_test, outfile: labeled_test"""
 		self.test_instances = self.featurize(test_file,self.test_instances,True)
 		with open('featurized_test', 'w') as test_file:
@@ -88,17 +86,15 @@ class RelExtractor(object):
 			if p > max_prob:
 				max_prob = p
 				max_label = line[i-1]
+		#print name,max_label,max_prob
 		return max_label
-
 
 if __name__ == "__main__":
 	rel_ext = RelExtractor()
 	rel_ext.train('rel-trainset.gold')
-	print len(rel_ext.train_instances)
+	#print len(rel_ext.train_instances)
 	rel_ext.test('rel-devset.gold')
-	print len(rel_ext.test_instances)
+	#print len(rel_ext.test_instances)
 	rel_ext.evaluate()
-
-
 
 
