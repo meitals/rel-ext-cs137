@@ -66,5 +66,15 @@ if precision+recall > 0:
 
 print correct, gold_total, test_total
 print 'precision =', precision, 'recall =', recall, 'f1 =', f
-            
+
+error_dict = {} 
+for ind, gold_type in enumerate(gold_tag_list):
+    test_type = test_tag_list[ind]
+    if gold_type != test_type:
+        error_name = 'GOLD_{}\tTEST_{}'.format(gold_type, test_type)
+        error_dict[error_name] = error_dict.get(error_name, 0) + 1
+
+with open('confusion_matrix.txt', 'w') as confusion_file:
+    for error in error_dict.keys():
+        confusion_file.write('{}:\t{}\n'.format(error, error_dict[error]))
     
