@@ -88,7 +88,6 @@ class RelExtractor(object):
 			if p > max_prob:
 				max_prob = p
 				max_label = line[i-1]
-		#print name,max_label,max_prob
 		return max_label
 
 
