@@ -46,6 +46,11 @@ for i in range(len(gold_tag_list)):
         test_total += 1
     if gold_tag_list[i] != 'no_rel' and gold_tag_list[i] == test_tag_list[i]:
         correct += 1
+    # if test_tag_list[i] != 'no_rel' and gold_tag_list[i] == 'no_rel':
+    #     print("fp",i,test_tag_list[i])
+    # if gold_tag_list[i] != 'no_rel' and test_tag_list[i] == 'no_rel':
+    #     print('fn',i,gold_tag_list[i])
+
 
 print correct, gold_total, test_total
 

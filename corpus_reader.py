@@ -1,4 +1,5 @@
 import nltk.tree
+import os,re
 
 class CorpusReader:
     def __init__(self, filename, reading_gold_file=False):
@@ -27,12 +28,14 @@ class CorpusReader:
                                             title=doc_filename,
                                             parses=self.get_document_parses(doc_filename),
                                             pos_tagged_sents=self.get_pos_tagged_sents(doc_filename),
+                                            dparses=self.get_dependency_relations(doc_filename),
                                             reading_gold_file=reading_gold_file
                                         )
             # now we are sure document is in corpus. Add the two_tokens line
             corpus[doc_filename].two_tokens.append(TwoTokens(
                                                     split_line=line_split,
-                                                    reading_gold_file=reading_gold_file
+                                                    reading_gold_file=reading_gold_file,
+                                                    dp=corpus[doc_filename].dparses
                                                     ))
         return corpus
 
@@ -54,6 +57,30 @@ class CorpusReader:
             pos_tagged_sents.append(sent)
         return pos_tagged_sents
 
+    def get_dependency_relations(self, doc_filename):
+        lines = self.get_file_lines('data/dependency-parsed-files/'+doc_filename+'.head.rel.tokenized.raw.dparse')
+        ind = 0
+        dependency_relation_sents = []
+        pattern = re.compile(r"\((.+)\)")
+        sent = {}
+        for line in lines:
+            if len(line.strip()) == 0:
+                dependency_relation_sents.append(sent)
+                ind += 1
+                sent = {}
+                continue
+            groups = re.split(pattern,line) #In format relation(word1, word2)
+            sent[groups[1]] = groups[0]
+        return dependency_relation_sents
+
+    def get_plaintext(self, doc_filename):
+        lines = self.get_file_lines('data/text-files/'+doc_filename+'.head.rel.tokenized.raw')
+        no_empty_lines = [line for line in lines if line not in [' ', '', '\n']]
+        sents = []
+        for line in no_empty_lines:
+            sent = line.split()
+            sents.append(sent)
+        return sents
 
     def get_file_lines(self, filepath):
         #filepath is relative to being in the project directory
@@ -62,17 +89,29 @@ class CorpusReader:
         f.close
         return lines
 
+def check_dependency_relation(dependency_relation_sents,sent,token1,token2,offset1,offset2):
+    if int(sent) < len(dependency_relation_sents):
+        d_r_sent = dependency_relation_sents[int(sent)]
+        key = "{}-{}, {}-{}".format(token1,offset1,token2,offset2)
+        if key in d_r_sent.keys():
+            return True
+    return False
+
 class Document:
-    def __init__(self, title, parses, pos_tagged_sents, reading_gold_file=False):
+    def __init__(self, title, parses, pos_tagged_sents, dparses, reading_gold_file=False):
         self.title = title
         self.reading_gold_file = reading_gold_file
         self.parses = parses
         self.pos_tagged_sents = pos_tagged_sents
+        self.dparses = dparses
         self.two_tokens = []
+        if len(dparses) != len(pos_tagged_sents):
+            # print title,len(dparses),len(pos_tagged_sents)
+            dparses = []
 
 
 class TwoTokens:
-    def __init__(self, split_line, reading_gold_file=False):
+    def __init__(self, split_line, reading_gold_file=False, dp=[]):
         self.split_line = split_line
         #gold files have the tag at the beginning--grab and remove it
         if reading_gold_file:
@@ -91,14 +130,18 @@ class TwoTokens:
         self.entity_type2 = split_line[10]
         self.entity_id2 = split_line[11]
         self.token2 = split_line[12]
+        self.in_dependency_relation = check_dependency_relation(dp,self.sent_offset1,
+            self.token1,self.token2,self.begin_token1,self.begin_token2)
 
 if __name__ == '__main__':
     # Example Usage
     # Corpus is a dict from {doc_name : document_object}
-    c = CorpusReader('rel-trainset.gold', reading_gold_file=True)
-    corpus = c.corpus
+    # c = CorpusReader('rel-trainset.gold', reading_gold_file=True)
+    # c = CorpusReader('rel-devset.gold', reading_gold_file=True)
+    c = CorpusReader('rel-testset.gold', reading_gold_file=True)
+    # corpus = c.corpus
 
-    print (corpus[c.corpus.keys()[0]].title)
-    for i in corpus[c.corpus.keys()[0]].pos_tagged_sents:
-        print(i)
+    # print (corpus[c.corpus.keys()[0]].title)
+    # for i in corpus[c.corpus.keys()[0]].pos_tagged_sents:
+    #     print(i)
     #print (corpus[c.corpus.keys()[0]].pos_tagged_sents)
