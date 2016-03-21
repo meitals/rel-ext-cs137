@@ -31,6 +31,7 @@ class FeatureExtractor:
 		self.featurize_get_entity_types()
 		self.featurize_add_minimal_tree_nodes()
 		self.featurize_get_bigrams()
+		self.featurize_in_dependency_relation()
 
 
 	def get_relations_list_from_gold_files(self):
@@ -54,6 +55,11 @@ class FeatureExtractor:
 					doc_list.append(RelInstance(tt.token1,tt.token2,""))
 			rel_inst_list.append(doc_list)
 		return rel_inst_list
+
+	def featurize_in_dependency_relation(self):
+		for doc_i, doc in enumerate(self.docs):
+			for tt_i, tt in enumerate(doc.two_tokens):
+				self.rel_inst_list[doc_i][tt_i].features.append("d_relation__"+str(tt.in_dependency_relation))	
 
 	def featurize_get_entity_types(self):
 		for doc_i, doc in enumerate(self.docs):

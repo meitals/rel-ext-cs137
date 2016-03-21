@@ -106,7 +106,7 @@ class Document:
         self.dparses = dparses
         self.two_tokens = []
         if len(dparses) != len(pos_tagged_sents):
-            print title,len(dparses),len(pos_tagged_sents)
+            # print title,len(dparses),len(pos_tagged_sents)
             dparses = []
 
 
