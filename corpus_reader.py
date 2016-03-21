@@ -89,13 +89,13 @@ class CorpusReader:
         f.close
         return lines
 
-def check_dependency_relation(dependency_relation_sents,sent,token1,token2,offset1,offset2):
+def get_dependency_relation(dependency_relation_sents,sent,token1,token2,offset1,offset2):
     if int(sent) < len(dependency_relation_sents):
         d_r_sent = dependency_relation_sents[int(sent)]
         key = "{}-{}, {}-{}".format(token1,offset1,token2,offset2)
-        if key in d_r_sent.keys():
-            return True
-    return False
+        if key in d_r_sent:
+            return d_r_sent.get(key)
+    return ""
 
 class Document:
     def __init__(self, title, parses, pos_tagged_sents, dparses, reading_gold_file=False):
@@ -130,7 +130,7 @@ class TwoTokens:
         self.entity_type2 = split_line[10]
         self.entity_id2 = split_line[11]
         self.token2 = split_line[12]
-        self.in_dependency_relation = check_dependency_relation(dp,self.sent_offset1,
+        self.in_dependency_relation = get_dependency_relation(dp,self.sent_offset1,
             self.token1,self.token2,self.begin_token1,self.begin_token2)
 
 if __name__ == '__main__':
