@@ -65,9 +65,8 @@ class FeatureExtractor:
 		for doc_i, doc in enumerate(self.docs):
 			for tt_i, tt in enumerate(doc.two_tokens):
 				types = tt.entity_type1+'_'+tt.entity_type2
-				self.rel_inst_list[doc_i][tt_i].features.append(types)	
-
-
+				self.rel_inst_list[doc_i][tt_i].features.append(types)
+	
 	def featurize_get_in_between_words(self):
 		"""Gets words in between related words"""
 		for doc_i, doc in enumerate(self.docs):
@@ -213,6 +212,9 @@ class FeatureExtractor:
 		return labels
 
 	def featurize_target_pos(self):
+		"""add POS tag for second token 
+
+		note: for some reason this works better than including both pos tags"""
 		for doc_i, doc in enumerate(self.docs):
 			pos_tagged_sents = doc.pos_tagged_sents
 			for tt_i, tt in enumerate(doc.two_tokens):
