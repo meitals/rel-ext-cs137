@@ -86,15 +86,15 @@ class RelExtractor(object):
 			if p > max_prob:
 				max_prob = p
 				max_label = line[i-1]
-		print name,max_label,max_prob
+		#print name,max_label,max_prob
 		return max_label
 
 if __name__ == "__main__":
 	rel_ext = RelExtractor()
 	rel_ext.train('rel-trainset.gold')
-	print len(rel_ext.train_instances)
+	#print len(rel_ext.train_instances)
 	rel_ext.test('rel-devset.gold')
-	print len(rel_ext.test_instances)
+	#print len(rel_ext.test_instances)
 	rel_ext.evaluate()
 
 

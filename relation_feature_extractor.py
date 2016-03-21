@@ -32,7 +32,7 @@ class FeatureExtractor:
 		self.featurize_add_minimal_tree_nodes()
 		self.featurize_get_bigrams()
 		self.featurize_in_dependency_relation()
-
+		self.featurize_target_pos()
 
 	def get_relations_list_from_gold_files(self):
 		# Create pairs where the key is the word pair and the value is the relation
@@ -211,6 +211,20 @@ class FeatureExtractor:
 			if isinstance(child, nltk.tree.Tree):
 				labels.extend(self.get_tree_labels(child))
 		return labels
+
+	def featurize_target_pos(self):
+		for doc_i, doc in enumerate(self.docs):
+			pos_tagged_sents = doc.pos_tagged_sents
+			for tt_i, tt in enumerate(doc.two_tokens):
+				pos1, pos2 = self.get_target_pos(doc, tt)
+				#self.rel_inst_list[doc_i][tt_i].features.append('targetpos_{}'.format(pos1))
+				self.rel_inst_list[doc_i][tt_i].features.append('targetpos_{}'.format(pos2))
+
+	def get_target_pos(self, document, two_tokens):
+		sent = document.pos_tagged_sents[int(two_tokens.sent_offset1)]
+		token1_pos = sent[int(two_tokens.begin_token1)][1] 
+		token2_pos = sent[int(two_tokens.begin_token2)][1]
+		return token1_pos, token2_pos
 
 
 if __name__ == "__main__":
