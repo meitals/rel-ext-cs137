@@ -45,7 +45,7 @@ class RelExtractor(object):
 				#print 'rel_type=', rel_type
 				training_file.write('{} {} {}\n'.format(instance.tokens, rel_type, feature_str))
 
-		os.system('Mallet1/bin/mallet import-file --input featurized_training --line-regex ^(\S*)[\s]*(\S*)[\s]*(.*)$ --output featurized_training.mallet')
+		os.system("Mallet1/bin/mallet import-file --input featurized_training --line-regex '^(\S*)[\s]*(\S*)[\s]*(.*)$' --output featurized_training.mallet")
 		os.system('Mallet1/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
 			--trainer MaxEnt')
 
