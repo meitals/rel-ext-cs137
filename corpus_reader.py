@@ -70,7 +70,8 @@ class CorpusReader:
                 sent = {}
                 continue
             groups = re.split(pattern,line) #In format relation(word1, word2)
-            sent[groups[1]] = groups[0]
+            words = re.split(", ",groups[1])
+            sent[words[0].lower()+"_"+words[1].lower()] = groups[0]
         return dependency_relation_sents
 
     def get_plaintext(self, doc_filename):
@@ -92,9 +93,15 @@ class CorpusReader:
 def get_dependency_relation(dependency_relation_sents,sent,token1,token2,offset1,offset2):
     if int(sent) < len(dependency_relation_sents):
         d_r_sent = dependency_relation_sents[int(sent)]
-        key = "{}-{}, {}-{}".format(token1,offset1,token2,offset2)
+        #key = "{}-{}, {}-{}".format(token1,offset1,token2,offset2)
+        key = "{}_{}".format(token1.lower(),token2.lower())
+        key2 = "{}_{}".format(token2.lower(),token1.lower())
         if key in d_r_sent:
+            print d_r_sent.get(key),key
             return d_r_sent.get(key)
+        elif key2 in d_r_sent:
+            print d_r_sent.get(key2),key2
+            return d_r_sent.get(key2)
     return ""
 
 class Document:

@@ -45,8 +45,9 @@ class RelExtractor(object):
 				#print 'rel_type=', rel_type
 				training_file.write('{} {} {}\n'.format(instance.tokens, rel_type, feature_str))
 
-		os.system('Mallet1/bin/mallet import-file --input featurized_training --line-regex ^(\S*)[\s]*(\S*)[\s]*(.*)$ --output featurized_training.mallet')
-		os.system('Mallet1/bin/mallet train-classifier --input featurized_training.mallet --output-classifier relext_model \
+		#os.system('Mallet1/bin/mallet import-file --input featurized_training --output featurized_training.mallet --line-regex ^(\S*)[\s]*(\S*)[\s]*(.*)$')
+		os.system('Mallet1/bin/mallet import-file --input featurized_training --output featurized_training.mallet')
+		os.system('Mallet1/bin/mallet train-classifier --verbosity 0 --noOverwriteProgressMessages true --input featurized_training.mallet --output-classifier relext_model \
 			--trainer MaxEnt')
 
 	def test(self,test_file):
@@ -96,5 +97,4 @@ if __name__ == "__main__":
 	rel_ext.test('rel-devset.gold')
 	#print len(rel_ext.test_instances)
 	rel_ext.evaluate()
-
 

@@ -31,7 +31,7 @@ class FeatureExtractor:
 		self.featurize_get_entity_types()
 		self.featurize_add_minimal_tree_nodes()
 		self.featurize_get_bigrams()
-		#self.featurize_in_dependency_relation()
+		self.featurize_in_dependency_relation()
 		self.featurize_target_pos()
 		self.featurize_border_words()
 
@@ -61,10 +61,10 @@ class FeatureExtractor:
 		for doc_i, doc in enumerate(self.docs):
 			for tt_i, tt in enumerate(doc.two_tokens):
 				self.rel_inst_list[doc_i][tt_i].features.append("d_relation__"+tt.in_dependency_relation)
-				if tt.in_dependency_relation == "":
-					self.rel_inst_list[doc_i][tt_i].features.append("in_d_relation__False")
-				else:
-					self.rel_inst_list[doc_i][tt_i].features.append("in_d_relation__True")
+				# if tt.in_dependency_relation == "":
+				# 	self.rel_inst_list[doc_i][tt_i].features.append("in_d_relation__False")
+				# else:
+				# 	self.rel_inst_list[doc_i][tt_i].features.append("in_d_relation__True")
 
 
 	def featurize_get_entity_types(self):
