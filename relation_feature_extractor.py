@@ -225,7 +225,7 @@ class FeatureExtractor:
 			pos_tagged_sents = doc.pos_tagged_sents
 			for tt_i, tt in enumerate(doc.two_tokens):
 				pos1, pos2 = self.get_target_pos(doc, tt)
-				#self.rel_inst_list[doc_i][tt_i].features.append('targetpos_{}'.format(pos1))
+				self.rel_inst_list[doc_i][tt_i].features.append('targetpos_{}'.format(pos1))
 				self.rel_inst_list[doc_i][tt_i].features.append('targetpos_{}'.format(pos2))
 
 	def get_target_pos(self, document, two_tokens):
