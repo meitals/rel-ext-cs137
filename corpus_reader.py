@@ -61,17 +61,19 @@ class CorpusReader:
         lines = self.get_file_lines('data/dependency-parsed-files/'+doc_filename+'.head.rel.tokenized.raw.dparse')
         ind = 0
         dependency_relation_sents = []
-        pattern = re.compile(r"\((.+)\)")
+        pattern = re.compile(r"(.+)\((.+)-(\d+)(\'*), (.+)-(\d+)(\'*)\)")
         sent = {}
         for line in lines:
-            if len(line.strip()) == 0:
+            line = line.strip()
+            if len(line) == 0:
                 dependency_relation_sents.append(sent)
                 ind += 1
                 sent = {}
                 continue
             groups = re.split(pattern,line) #In format relation(word1, word2)
-            words = re.split(", ",groups[1])
-            sent[words[0].lower()+"_"+words[1].lower()] = groups[0]
+            # groups = ['', 'acl', 'Ruffles', '1', '', 'peeping', '2', "'", '']
+            key = get_key_for_dparse(groups[2],groups[5],groups[3],groups[6])
+            sent[key] = groups[1]
         return dependency_relation_sents
 
     def get_plaintext(self, doc_filename):
@@ -90,17 +92,22 @@ class CorpusReader:
         f.close
         return lines
 
+def get_key_for_dparse(token1,token2,ind1,ind2):
+    key = "{}_{}".format(token1.lower(),token2.lower())
+    #print key
+    return key
+
 def get_dependency_relation(dependency_relation_sents,sent,token1,token2,offset1,offset2):
     if int(sent) < len(dependency_relation_sents):
         d_r_sent = dependency_relation_sents[int(sent)]
         #key = "{}-{}, {}-{}".format(token1,offset1,token2,offset2)
-        key = "{}_{}".format(token1.lower(),token2.lower())
-        key2 = "{}_{}".format(token2.lower(),token1.lower())
+        key = get_key_for_dparse(token1,token2,offset1,offset2)
+        key2 = get_key_for_dparse(token2,token1,offset2,offset1)
         if key in d_r_sent:
-            print d_r_sent.get(key),key
+            # print d_r_sent.get(key),key
             return d_r_sent.get(key)
         elif key2 in d_r_sent:
-            print d_r_sent.get(key2),key2
+            # print d_r_sent.get(key2),key2
             return d_r_sent.get(key2)
     return ""
 

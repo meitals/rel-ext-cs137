@@ -58,9 +58,6 @@ for i in range(len(gold_tag_list)):
     # if gold_tag_list[i] != 'no_rel' and test_tag_list[i] == 'no_rel':
     #     print('fn',i,gold_tag_list[i])
 
-
-print correct, gold_total, test_total
-
 precision = 0
 if test_total > 0:
     precision = float(correct) / test_total
@@ -73,6 +70,7 @@ if precision+recall > 0:
 
 print correct, gold_total, test_total
 print 'precision =', precision, 'recall =', recall, 'f1 =', f
+print precision,recall,f
 
 error_dict = {} 
 for ind, gold_type in enumerate(gold_tag_list):
